@@ -9,11 +9,45 @@ function customerSuccessBalancing(
   customers,
   customerSuccessAway
 ) {
-  /**
-   * ===============================================
-   * =========== Write your solution here ==========
-   * ===============================================
-   */
+  const csUpdated = customerSuccess.filter(
+    cs => !customerSuccessAway.includes(cs.id) && cs );
+
+  const customersUpdated = customers.map(customer => {
+    const newCustomer = Object.assign({}, customer);
+
+    newCustomer.balanced = false;
+
+    return newCustomer;
+  });
+
+  const csWithClients = csUpdated.map(cs => {
+    const newCS = Object.assign({}, cs);
+
+    newCS.totalClients = customersUpdated.filter(customer => {
+      if (!customer.balanced && customer.score <= cs.score) {
+
+        customer.balanced = true;
+
+        return customer;
+      }
+    }).length;
+
+    return newCS;
+  });
+
+  const maxAmountOfClientsByCS = Math.max.apply(
+    Math, csWithClients.map(cs => cs.totalClients));
+
+  const cssWithMostClients = csWithClients.filter(
+    cs => cs.totalClients === maxAmountOfClientsByCS);
+
+  let csIDWithMostClients = 0;
+
+  if (cssWithMostClients.length === 1) {
+    csIDWithMostClients = cssWithMostClients[0].id;
+  }
+
+  return csIDWithMostClients;
 }
 
 test("Scenario 1", () => {

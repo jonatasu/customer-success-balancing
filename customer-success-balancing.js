@@ -9,37 +9,32 @@ function customerSuccessBalancing(
   customers,
   customerSuccessAway
 ) {
-  const csUpdated = customerSuccess.filter(
-    cs => !customerSuccessAway.includes(cs.id) && cs );
+  const availableCustomerSuccess = customerSuccess
+    .filter(cs => !customerSuccessAway.includes(cs.id) && cs)
+    .sort((a, b) => a.score - b.score);
 
-  const customersUpdated = customers.map(customer => {
-    const newCustomer = Object.assign({}, customer);
+  const tempCustomers = Object.assign([], customers);
 
-    newCustomer.balanced = false;
-
-    return newCustomer;
-  });
-
-  const csWithClients = csUpdated.map(cs => {
+  const csWithClients = availableCustomerSuccess.map(cs => {
     const newCS = Object.assign({}, cs);
 
-    newCS.totalClients = customersUpdated.filter(customer => {
-      if (!customer.balanced && customer.score <= cs.score) {
+    newCS.customers = [];
 
-        customer.balanced = true;
-
-        return customer;
+    tempCustomers.forEach((customer, index) => {
+      if (customer.score <= cs.score) {
+        newCS.customers.push(customer);
+        delete tempCustomers[index];
       }
-    }).length;
+    });
 
     return newCS;
   });
 
-  const maxAmountOfClientsByCS = Math.max.apply(
-    Math, csWithClients.map(cs => cs.totalClients));
+  const maxAmountOfClientsBalancedFound = Math.max.apply(
+    Math, csWithClients.map(cs => cs.customers.length));
 
   const cssWithMostClients = csWithClients.filter(
-    cs => cs.totalClients === maxAmountOfClientsByCS);
+    cs => cs.customers.length === maxAmountOfClientsBalancedFound);
 
   let csIDWithMostClients = 0;
 
@@ -85,7 +80,7 @@ function mapEntities(arr) {
   }));
 }
 
-function arraySeq(count, startAt){
+function arraySeq(count, startAt) {
   return Array.apply(0, Array(count)).map((it, index) => index + startAt);
 }
 

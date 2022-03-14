@@ -9,31 +9,32 @@ function customerSuccessBalancing(
   customers,
   customerSuccessAway
 ) {
+  const tempCustomers = Object.assign([], customers)
+    .sort((a, b) => a.score - b.score)
+    .reverse();
+
   const availableCustomerSuccess = customerSuccess
     .filter(cs => !customerSuccessAway.includes(cs.id) && cs)
-    .sort((a, b) => a.score - b.score);
+    .sort((a, b) => a.score - b.score)
+    .map(cs => {
+      const newCS = Object.assign({}, cs);
 
-  const tempCustomers = Object.assign([], customers);
+      newCS.customers = [];
 
-  const csWithClients = availableCustomerSuccess.map(cs => {
-    const newCS = Object.assign({}, cs);
+      tempCustomers.forEach((customer, index) => {
+        if (customer.score <= cs.score) {
+          newCS.customers.push(customer);
+          delete tempCustomers[index];
+        }
+      });
 
-    newCS.customers = [];
-
-    tempCustomers.forEach((customer, index) => {
-      if (customer.score <= cs.score) {
-        newCS.customers.push(customer);
-        delete tempCustomers[index];
-      }
+      return newCS;
     });
 
-    return newCS;
-  });
-
   const maxAmountOfClientsBalancedFound = Math.max.apply(
-    Math, csWithClients.map(cs => cs.customers.length));
+    Math, availableCustomerSuccess.map(cs => cs.customers.length));
 
-  const cssWithMostClients = csWithClients.filter(
+  const cssWithMostClients = availableCustomerSuccess.filter(
     cs => cs.customers.length === maxAmountOfClientsBalancedFound);
 
   let csIDWithMostClients = 0;
